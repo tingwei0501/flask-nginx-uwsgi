@@ -46,8 +46,8 @@ path `/home/ubuntu`
 - run `uwsgi --ini uwsgi.ini` to see whether it works normally
 
 ### nginx
-- `sudo vim /etc/nginx/sites-available/default`
-listen on port 80 (default), if it is not idle, change to other port (e.g. 8080).
+- `sudo vim /etc/nginx/sites-available/default`</br>
+listen on port 80 (default), if it is not idle, change to other port (e.g. 8080).</br>
 `uwsgi_pass` is the same as socket in uwsgi.
 ```
   server {
