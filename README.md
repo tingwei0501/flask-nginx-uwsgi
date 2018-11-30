@@ -87,5 +87,5 @@ be careful to set the right path for `ExecStart`
 - `sudo systemctl status labeling` to check the status
 
 ### TEST
-After start uwsgi & nginx, go to IP:80 (your port) to see whether it works well.
+After start uwsgi & nginx, go to `IP:80` (your port) to see whether it works well.</br>
 you can see log at `/home/ubuntu/server.log`.
