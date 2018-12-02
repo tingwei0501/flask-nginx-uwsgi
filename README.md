@@ -85,6 +85,7 @@ be careful to set the right path for `ExecStart`
 ```
 - `sudo systemctl start labeling` to start uwsgi
 - `sudo systemctl status labeling` to check the status
+- `systemctl daemon-reload` to reload system service!!!
 
 ### TEST
 After start uwsgi & nginx, go to `IP:80` (your port) to see whether it works well.</br>
