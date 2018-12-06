@@ -55,7 +55,7 @@ listen on port 80 (default), if it is not idle, change to other port (e.g. 8080)
     server_name server_domain_or_IP;
     location / {
       include uwsgi_params;
-      uwsgi_pass 127.0.0.1:9000
+      uwsgi_pass 127.0.0.1:9000;
     }
   }
 ```
