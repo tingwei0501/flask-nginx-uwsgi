@@ -39,7 +39,7 @@ e.g. `cd /var/www/labelingflask`
 - put your .py(e.g. labelingServer.py) at `/var/www/labelingflask`
 
 ### uwsgi
-### Test uwsgi
+#### Test uwsgi
 `cd /var/www/labelingflask`
 - `$ uwsgi --module labelingServer --callable app --http :1234 --venv /var/www/labelingflask/venv` </br>
 you can test at http://IP:1234 to see whether it works well.
