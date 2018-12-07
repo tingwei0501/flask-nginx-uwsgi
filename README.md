@@ -47,7 +47,7 @@ you can test at http://IP:1234 to see whether it works well.
 ### nginx
 - `sudo vim /etc/nginx/sites-enabled/labelingflask.conf`</br>
 listen on port 8080, you can choose your own port.</br>
-`uwsgi_pass` is the same as socket in uwsgi.
+`uwsgi_pass` is the same as socket in uwsgi, we will use it later.
 ```
   server {
     listen 8080;
