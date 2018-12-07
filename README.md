@@ -12,10 +12,18 @@ To make the server more stable, here we use flask+uwsgi+nginx.
 ## Platform & Environment
 - ubuntu 16.04.3 LTS
 - python3.5
+- IP: AWS public IP
+
+## Working Directory
+`cd /var/www/project_folder`
+e.g. `cd /var/www/labelingflask`
+
+### with virtualenv
+- create virtual environment `virtualenv -p /usr/bin/python3 venv`
+- activate `source venv/bin/activate`
+- deactivate `deactivate`
 
 ## Installation
-path `/home/ubuntu`
-
 ### python3
 ```python
   sudo apt-get update
@@ -26,45 +34,67 @@ path `/home/ubuntu`
   pip install uwsgi flask
 ```
 
-## Files arrangement
+## Files Arrangement
 ### Flask
-- put your .py(e.g. server.py) at `/home/ubuntu`
+- put your .py(e.g. labelingServer.py) at `/var/www/labelingflask`
 
 ### uwsgi
-- create `uwsgi.ini` at `/home/ubuntu`
-```
-  [uwsgi]
-  module = server:app
-  socket = 127.0.0.1:9000
-  chdir = /home/ubuntu
-  logto = /home/ubuntu/server.log
-  processes = 2
-  master = true
-  chmod-socket = 660
-  vacuum = true
-```
-- run `uwsgi --ini uwsgi.ini` to see whether it works normally
+### Test uwsgi
+`cd /var/www/labelingflask`
+- `$ uwsgi --module labelingServer --callable app --http :1234 --venv /var/www/labelingflask/venv` </br>
+you can test at http://IP:1234 to see whether it works well.
 
 ### nginx
-- `sudo vim /etc/nginx/sites-available/default`</br>
-listen on port 80 (default), if it is not idle, change to other port (e.g. 8080).</br>
+- `sudo vim /etc/nginx/sites-enabled/labelingflask.conf`</br>
+listen on port 8080, you can choose your own port.</br>
 `uwsgi_pass` is the same as socket in uwsgi.
 ```
   server {
-    listen 80;
+    listen 8080;
     server_name server_domain_or_IP;
-    location / {
-      include uwsgi_params;
-      uwsgi_pass 127.0.0.1:9000;
-    }
+    root  /var/www/labelingflask;
+        location / {
+                try_files $uri @uwsgi;
+        }
+        location @uwsgi{
+                include uwsgi_params;
+                uwsgi_pass 127.0.0.1:6000;
+        }
   }
 ```
 - `sudo service nginx start` to start nginx
 - `sudo service nginx status` to see the status of nginx
 - `cat /var/log/nginx/error.log` to see error log
+- `cat /var/log/nginx/access.log` to see successiful log
+
+### Test connection between uwsgi & nginx
+- `$ uwsgi --module labelingServer --callable app --socket 127.0.0.1:6000 --chown-socket www-data:www-data --venv /var/www/labelingflask/venv` </br>
+you can test at http://IP:8080 to see whether it works well.
+
+#### Errors with uwsgi
+- error: `!!! no internal routing support, rebuild with pcre support !!!` </br>
+solution: `pip install uwsgi -I --no-cache-dir`
+
+### Command to File: uwsgi.ini
+- create `uwsgi.ini` at `/etc/uwsgi/apps-enabled/uwsgi.ini`
+```
+  [uwsgi]
+  module = labelingServer
+  callable = app
+  socket = 127.0.0.1:6000
+  chdir = /var/www/labelingflask
+  venv = /var/www/labelingflask/venv
+  logto = /var/www/labelingflask/uwsgi.log
+  processes = 2
+  master = true
+  chown-socket = www-data:www-data
+  chmod-socket = 660
+  vacuum = true
+```
+- run `$ uwsgi --ini /etc/uwsgi/apps-enabled/uwsgi.ini` to see whether it works.
 
 ### set uwsgi to system service
-If you run `uwsgi --ini myproject.ini`, after closing the terminal, uwsgi will be closed either.
+If you run `uwsgi --ini /etc/uwsgi/apps-enabled/uwsgi.ini`, after closing the terminal, uwsgi will be closed too.
 So we will use `systemd` to make uwsgi a system service.
 - `sudo vim /etc/systemd/system/labeling.service` (for labeling Study)
 be careful to set the right path for `ExecStart`
@@ -76,9 +106,9 @@ be careful to set the right path for `ExecStart`
   [Service]
   User=ubuntu
   Group=www-data
-  WorkingDirectory=/home/ubuntu
-  Environment=FLASKR_SETTINGS=/home/ubuntu
-  ExecStart=/home/ubuntu/.local/bin/uwsgi --ini /home/ubuntu/uwsgi.ini
+  WorkingDirectory=/var/www/labelingflask
+  Environment=FLASKR_SETTINGS=/var/www/labelingflask/venv
+  ExecStart=/var/www/labelingflask/venv/bin/uwsgi --ini /etc/uwsgi/apps-available/lablingflask.ini
 
   [Install]
   WantedBy=multi-user.target
@@ -88,5 +118,4 @@ be careful to set the right path for `ExecStart`
 - `systemctl daemon-reload` to reload system service!!!
 
 ### TEST
-After start uwsgi & nginx, go to `IP:80` (your port) to see whether it works well.</br>
-you can see log at `/home/ubuntu/server.log`.
+After start uwsgi & nginx, go to `IP:8080` (your port) to see whether it works well.
